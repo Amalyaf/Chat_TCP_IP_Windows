@@ -4,12 +4,12 @@
 #include "Message.h"
 #include "Server.h"
 
-constexpr auto userData = "C:/Windows/Temp/Chat/userData.txt";	// файл для хранения данных пользователей 
-constexpr auto user_count = "C:/Windows/Temp/Chat/user_count.txt";	// файл для хранения кол-ва зарегистрированных пользователей
-constexpr auto private_message = "C:/Windows/Temp/Chat/private_message.txt";	// файл для хранения непросмотренных личных сообщений
-constexpr auto public_message = "C:/Windows/Temp/Chat/public_message.txt";	// файл для хранения непрочитанных общих сообщений
-constexpr auto prvt_msg_count = "C:/Windows/Temp/Chat/private_message_count.txt";   // файл для хранения кол-ва личных непрочитанных сообщений
-constexpr auto pblc_msg_count = "C:/Windows/Temp/Chat/public_message_count.txt";   // файл для хранения кол-ва общих непрочитанных сообщений
+constexpr auto userData = "C:/Windows/Temp/userData.txt";	// файл для хранения данных пользователей 
+constexpr auto user_count = "C:/Windows/Temp/user_count.txt";	// файл для хранения кол-ва зарегистрированных пользователей
+constexpr auto private_message = "C:/Windows/Temp/private_message.txt";	// файл для хранения непросмотренных личных сообщений
+constexpr auto public_message = "C:/Windows/Temp/public_message.txt";	// файл для хранения непрочитанных общих сообщений
+constexpr auto prvt_msg_count = "C:/Windows/Temp/private_message_count.txt";   // файл для хранения кол-ва личных непрочитанных сообщений
+constexpr auto pblc_msg_count = "C:/Windows/Temp/public_message_count.txt";   // файл для хранения кол-ва общих непрочитанных сообщений
 extern std::string status_connect;
 
 class Chat

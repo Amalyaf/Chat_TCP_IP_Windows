@@ -104,9 +104,9 @@ void Chat::registration()
 	std::string c = "y";
 	while (c != "n")
 	{
-		server.Write("\nĞåãèñòğàöèÿ íîâîãî ïîëüçîâàòåëÿ:\n");
 		Users user;
-		server.Write("Ââåäèòå ëîãèí: ");
+		server.Write("Ğåãèñòğàöèÿ íîâîãî ïîëüçîâàòåëÿ!\nÂâåäèòå ëîãèí: ");
+		//server.Write("Ââåäèòå ëîãèí: ");
 		user.setLogin(server.Read());
 		server.Write("Ââåäèòå ïàğîëü: ");
 		user.setPassword(server.Read());
@@ -186,8 +186,8 @@ void Chat::printMessage(std::string recipient)
 			count++;
 			if (count == 1)
 			{
-				server.Write("\n------------------------------------------------------\n");
-				server.Write("Ó âàñ åñòü íîâûå ëè÷íûå ñîîáùåíèÿ: ");
+				server.Write("\n------------------------------------------------------\nÓ âàñ åñòü íîâûå ëè÷íûå ñîîáùåíèÿ: ");
+				//server.Write("Ó âàñ åñòü íîâûå ëè÷íûå ñîîáùåíèÿ: ");
 			}
 			server.Write("\nÎòïğàâèòåëü: ");
 			server.Write(it->_sender);
@@ -210,8 +210,8 @@ void Chat::printMessage(std::string recipient)
 			count++;
 			if (count == 1)
 			{
-				server.Write("\n------------------------------------------------------\n");
-				server.Write("Ó âàñ åñòü íîâûå îáùèå ñîîáùåíèÿ: ");
+				server.Write("\n------------------------------------------------------\nÓ âàñ åñòü íîâûå îáùèå ñîîáùåíèÿ: ");
+				//server.Write("Ó âàñ åñòü íîâûå îáùèå ñîîáùåíèÿ: ");
 			}
 			server.Write("\nÎòïğàâèòåëü: ");
 			server.Write(it->_sender);

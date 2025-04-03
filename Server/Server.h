@@ -11,7 +11,7 @@
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
 
-#define MESSAGE_LENGTH 1024 // Максимальный размер буфера для данных
+#define MESSAGE_LENGTH 4096 // Максимальный размер буфера для данных
 #define PORT "7777" // Будем использовать этот номер порта
 
 

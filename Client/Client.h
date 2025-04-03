@@ -11,12 +11,11 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-#define MESSAGE_LENGTH 1024 // Максимальный размер буфера для данных
+#define MESSAGE_LENGTH 4096 // Максимальный размер буфера для данных
 #define PORT "7777" // Будем использовать этот номер порта
 
 class Client {
 private:
-    std::string message;
     WSADATA wsaData;
     SOCKET ConnectSocket = INVALID_SOCKET;
     struct addrinfo* result = NULL,
