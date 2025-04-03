@@ -2,5 +2,5 @@
 
 const char* BadPassword::what() const noexcept
 {
-	return "\nНеправильный пароль!\nХотите повторить ввод?(y/n):";
+	return "\nНеправильный пароль!\nХотите повторить ввод?(y/n): ";
 }

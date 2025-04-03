@@ -2,5 +2,5 @@
 
 const char* BadLogin::what() const noexcept
 {
-	return "\nПользователь не найден!\nХотите повторить ввод?(y/n):";
+	return "\nПользователь не найден!\nХотите повторить ввод?(y/n): ";
 }

@@ -47,6 +47,7 @@ void Chat::getChat()
 		server.Write(it->getPassword());
 		server.Write("\nИмя: ");
 		server.Write(it->getName());
+		server.Write("\n");
 	}
 }
 
@@ -57,7 +58,7 @@ void Chat::enter()
 	{
 		try
 		{
-			server.Write("Введите логин: ");
+			server.Write("\nДля входа введите логин: ");
 			_login = server.Read();
 			Users user;
 			user._login = _login;
@@ -105,7 +106,7 @@ void Chat::registration()
 	while (c != "n")
 	{
 		Users user;
-		server.Write("Регистрация нового пользователя!\nВведите логин: ");
+		server.Write("\nРегистрация нового пользователя!\nВведите логин: ");
 		//server.Write("Введите логин: ");
 		user.setLogin(server.Read());
 		server.Write("Введите пароль: ");
@@ -115,7 +116,7 @@ void Chat::registration()
 		std::vector<Users>::iterator result = find(allUsers.begin(), allUsers.end(), user);
 		if (result != allUsers.end())
 		{
-			server.Write("\nПользователь с таким логином уже существует!\nХотите повторить попытку?(y/n)\n");
+			server.Write("\nПользователь с таким логином уже существует!\nХотите повторить попытку?(y/n): ");
 			c = server.Read();
 		}
 		else
@@ -139,7 +140,7 @@ void Chat::sendPrivateMessage()
 		std::vector<Users>::iterator result = find(allUsers.begin(), allUsers.end(), user);
 		if (result == allUsers.end())
 		{
-			server.Write("\nПолучатель не найден!\nХотите повторить попытку?(y/n)");
+			server.Write("\nПолучатель не найден!\nХотите повторить попытку?(y/n): ");
 			c = server.Read();
 		}
 
@@ -519,12 +520,12 @@ void Chat::start() {
 	if (getReadUsersStatus() == 1) { // если есть файл с данными о ранее зарегистрированных пользователях,
 		// то сначала спрашиваем о регистрации нового пользователя и в зависимости от ответа выполняем регистрацию
 		getChat(); // вывод пользователей на экран, чтобы было видно логины и пароли 
-		server.Write("\nХотите зарегистрировать ещё одного пользователя?(y/n)\n");
+		server.Write("\n\nХотите зарегистрировать ещё одного пользователя?(y/n)\n");
 		c = server.Read();
 	}
 	while (c == "y") {
 		registration();
-		server.Write("\nХотите зарегистрировать ещё одного пользователя?(y/n)\n");
+		server.Write("\n\nХотите зарегистрировать ещё одного пользователя?(y/n)\n");
 		c = server.Read();
 	}
 
