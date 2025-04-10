@@ -10,7 +10,6 @@ std::string status_connect = "No";
 
 Chat::Chat()
 {
-	std::vector<Users> allUsers;
 	// если есть файл с данными ранее зарегистрированных пользователей, то вызвать методы для считывания данных из файлов
 	if (getReadUsersStatus() == 1) {
 		readUsers();
@@ -49,6 +48,8 @@ void Chat::getChat()
 		server.Write(it->getName());
 		server.Write("\n");
 	}
+	
+	//server.Write(false);
 }
 
 void Chat::enter()
@@ -176,7 +177,6 @@ void Chat::sendPublicMessage()
 	viewedMessage.push_back(message);
 }
 
-
 void Chat::printMessage(std::string recipient)
 {
 	int count = 0;
@@ -196,7 +196,9 @@ void Chat::printMessage(std::string recipient)
 			server.Write(it->_recipient);
 			server.Write("\nСообщение: ");
 			server.Write(it->_message);
+			server.Write("\n");
 		}
+		
 	}
 	if (count != 0)
 	{
@@ -218,8 +220,9 @@ void Chat::printMessage(std::string recipient)
 			server.Write(it->_sender);
 			server.Write("\nСообщение: ");
 			server.Write(it->_message);
-			//server.Write("\n");
+			server.Write("\n");
 		}
+		
 	}
 	if (count != 0)
 	{
@@ -515,17 +518,18 @@ void Chat::readPublicMessage() {
 
 
 void Chat::start() {
-
 	std::string c = "y"; // условие выхода из цикла
 	if (getReadUsersStatus() == 1) { // если есть файл с данными о ранее зарегистрированных пользователях,
 		// то сначала спрашиваем о регистрации нового пользователя и в зависимости от ответа выполняем регистрацию
 		getChat(); // вывод пользователей на экран, чтобы было видно логины и пароли 
 		server.Write("\n\nХотите зарегистрировать ещё одного пользователя?(y/n)\n");
+		//server.Write(false);
 		c = server.Read();
 	}
 	while (c == "y") {
 		registration();
 		server.Write("\n\nХотите зарегистрировать ещё одного пользователя?(y/n)\n");
+		//server.Write(false);
 		c = server.Read();
 	}
 

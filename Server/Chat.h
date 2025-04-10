@@ -3,6 +3,7 @@
 #include "Users.h"
 #include "Message.h"
 #include "Server.h"
+//#include "C:\Users\Amalya\source\repos\DB\Chat_TCP_IP_Windows\Client\Check.h"
 
 constexpr auto userData = "C:/Windows/Temp/userData.txt";	// файл для хранения данных пользователей 
 constexpr auto user_count = "C:/Windows/Temp/user_count.txt";	// файл для хранения кол-ва зарегистрированных пользователей

@@ -24,11 +24,14 @@ private:
     struct addrinfo hints;
     int iResult;
     std::string msg;
+    bool check = true;
 public:
     Server();
     ~Server();
     int init();
     void Write(std::string text);
+    //void Write(bool check);
     std::string Read();
     void exit();
+
 };

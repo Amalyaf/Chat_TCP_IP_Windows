@@ -86,6 +86,22 @@ void Server::Write(std::string msg)
     msg.clear();
 }
 
+//void Server::Write(bool check)
+//{
+//    //msg.clear();
+//       // Ввод сообщения от сервера
+//       //std::cout << "Enter the message you want to send to the client: " << std::endl;
+//       //std::getline(std::cin, msg);  // Используем getline для ввода строки с пробелами
+//
+//       // Отправка данных клиенту
+//    msg = "bool";
+//    size_t bytes_sent = send(ClientSocket, msg.c_str(), msg.size(), 0);
+//    if (bytes_sent < 0) {
+//        std::cout << "Failed to send data to the client!" << std::endl;
+//    }
+//    msg.clear();
+//}
+
 std::string Server::Read()
 {
     msg.clear();

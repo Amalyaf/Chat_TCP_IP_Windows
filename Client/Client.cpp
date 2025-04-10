@@ -85,6 +85,11 @@ void Client::Read()
         buffer[bytes_received] = '\0';  // Завершаем строку нулевым символом
         message = buffer;
 
+        if (message == "bool") {
+            check = false;
+            return;
+        }
+
         if (message == "\nВход не выполнен!\n" || message == "Exit") {
             status = "Exit";
             //close_socket();
@@ -95,6 +100,7 @@ void Client::Read()
     else {
         std::cout << "Failed to receive data from the server." << std::endl;
     }
+    return;
 }
 
 void Client::close_socket()
