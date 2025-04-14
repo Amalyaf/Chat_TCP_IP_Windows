@@ -26,6 +26,7 @@ private:
 	std::vector<Message>viewedMessage; // просмотренные сообщения
 	bool _status = false; // если был выполнен вход статус = true, в противном случае - false.
 	Server server;
+	int count_users = 0; // кол-во зарегистрированных пользователей
 public:
 	Chat(); // конструктор
 	~Chat(); // деструктор

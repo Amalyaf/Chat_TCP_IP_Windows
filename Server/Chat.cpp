@@ -122,7 +122,12 @@ void Chat::registration()
 		}
 		else
 		{
+			count_users++;
 			allUsers.push_back(user);
+			//if (count_users == 1) {
+			//	server.Create_TABLE(); // если регистрируется первый пользователь, то создаём новую таблицу в БД
+			//}
+			server.INSERT_DB(user); // добавляем нового пользователя в БД
 			c = "n";
 		}
 	}
