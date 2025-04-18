@@ -11,6 +11,13 @@ Server::~Server()
 
 int Server::init()
 {
+    if (init_socket() == 0 && init_DB() == 0) {
+        return 0;
+    }
+}
+
+int Server::init_socket()
+{
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
@@ -69,8 +76,63 @@ int Server::init()
         WSACleanup();
         return 1;
     }
+    return 0;
+}
 
-    DataBase_Connect(); // разделить на инит сервер и инит БД
+int Server::init_DB()
+{
+    // Выделяем дескриптор для базы данных
+    if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlEnvHandle))
+        close_DB();
+
+    if (SQL_SUCCESS != SQLSetEnvAttr(sqlEnvHandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0))
+        close_DB();
+
+    if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlEnvHandle, &sqlConnHandle))
+        close_DB();
+
+    std::cout << "Попытка подключения к SQL Server...\n";
+
+    // Устанавливаем соединение с сервером  
+    switch (SQLDriverConnect(sqlConnHandle,
+        GetDesktopWindow(),
+        (SQLWCHAR*)L"DRIVER={MySQL ODBC 9.2 ANSI Driver};SERVER=localhost;PORT=3306;DATABASE=chat_db;UID=root;PWD=root;",
+        SQL_NTS,
+        retconstring,
+        1024,
+        NULL,
+        SQL_DRIVER_COMPLETE)) {
+
+
+    case SQL_SUCCESS:
+    case SQL_SUCCESS_WITH_INFO:
+        std::cout << "Успешное подключение к SQL Server\n";
+        break;
+
+    case SQL_INVALID_HANDLE:
+    case SQL_ERROR:
+        std::cout << "Не удалось подключиться к SQL Server\n";
+        close_DB();
+
+    default:
+        break;
+    }
+
+    // Если соединение не установлено, то выходим из программы
+    if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlConnHandle, &sqlStmtHandle)) {
+        close_DB();
+        return 1;
+    }
+        
+    std::cout << "\nВыполнение запроса T-SQL...\n";
+
+    // Если выполнение запроса с ошибками, то выходим из программы
+    if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT * from users", SQL_NTS)) {
+        std::cout << "Ошибка запроса SQL Server \n";
+        close_DB();
+        return 1;
+    }
+
     return 0;
 }
 
@@ -88,22 +150,6 @@ void Server::Write(std::string msg)
     }
     msg.clear();
 }
-
-//void Server::Write(bool check)
-//{
-//    //msg.clear();
-//       // Ввод сообщения от сервера
-//       //std::cout << "Enter the message you want to send to the client: " << std::endl;
-//       //std::getline(std::cin, msg);  // Используем getline для ввода строки с пробелами
-//
-//       // Отправка данных клиенту
-//    msg = "bool";
-//    size_t bytes_sent = send(ClientSocket, msg.c_str(), msg.size(), 0);
-//    if (bytes_sent < 0) {
-//        std::cout << "Failed to send data to the client!" << std::endl;
-//    }
-//    msg.clear();
-//}
 
 std::string Server::Read()
 {
@@ -178,8 +224,6 @@ void Server::DataBase_Connect()
         std::cout << "Error querying SQL Server \n";
         close_DB();
     }
-
-    //getchar();
 }
 
 void Server::Create_TABLE()

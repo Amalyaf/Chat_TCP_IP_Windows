@@ -40,8 +40,9 @@ public:
     Server();
     ~Server();
     int init();
+    int init_socket();
+    int init_DB();
     void Write(std::string text);
-    //void Write(bool check);
     std::string Read();
     void exit();
     void DataBase_Connect();
