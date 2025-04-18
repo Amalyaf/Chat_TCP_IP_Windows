@@ -145,7 +145,7 @@ void Server::DataBase_Connect()
     // Устанавливаем соединение с сервером  
     switch (SQLDriverConnect(sqlConnHandle,
         GetDesktopWindow(),
-        (SQLWCHAR*)L"DRIVER={MySQL ODBC 9.2 ANSI Driver};SERVER=localhost;PORT=3306;DATABASE=testdb;UID=root;PWD=root;",
+        (SQLWCHAR*)L"DRIVER={MySQL ODBC 9.2 ANSI Driver};SERVER=localhost;PORT=3306;DATABASE=chat_db;UID=root;PWD=root;",
         SQL_NTS,
         retconstring,
         1024,
@@ -174,7 +174,7 @@ void Server::DataBase_Connect()
     std::cout << "\nExecuting T-SQL query...\n";
 
     // Если выполнение запроса с ошибками, то выходим из программы
-    if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT * from test", SQL_NTS)) {
+    if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT * from users", SQL_NTS)) {
         std::cout << "Error querying SQL Server \n";
         close_DB();
     }
@@ -192,52 +192,79 @@ void Server::Create_TABLE()
     }
 }
 
-void Server::INSERT_DB(Users us)
-{
-    //Объявление структуры данных для результата запроса версии SQL
-    SQLCHAR sqlVersion[SQL_RESULT_LEN];
-    SQLLEN sql_str_length;
-    // Переменная для хранения числа столбцов
-    SQLSMALLINT    V_OD_colanz, V_OD_rowcount;
-    SQLINTEGER   V_OD_err, V_OD_id;
-    SQLCHAR     V_OD_buffer[200];
-    
+void Server::INSERT_Users(Users us)
+{    
     std::string l = us.getLogin();
     std::string p = us.getPassword();
-    std::string n = us.getName();
-    /*std::string str("Hello world!!!");
-    std::wstring wstr(str.begin(), str.end());*/
-    
+    std::string n = us.getName();  
 
     std::wstring name(n.begin(), n.end());
     std::wstring login(l.begin(), l.end());
     std::wstring password(p.begin(), p.end());
     
-    std::wstring wquery = L"INSERT INTO Chat_DB ( name, login, password) VALUES ('" + name + L"', '" + login + L"', '" + password + L"')";
+    std::wstring wusers_qwery = L"INSERT INTO users ( name, login) VALUES ('" + name + L"', '" + login + L"')";
+    std::wstring wusers_pswd_qwery = L"INSERT INTO users_pswd (password) VALUES ('" + password + L"')";
 
-    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wquery.c_str(), SQL_NTS)) {
-        std::cout << "Success insert! \n";
+    
+    //Хотела сделать так, чтобы в таблице с паролями было id пользователя, но выдаёт ошибку при добавлении в запрос вставки переменную V_OD_id
+    /*SQLINTEGER   V_OD_err, V_OD_id;
+    V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
+    std::wstring wusers_pswd_qwery = L"INSERT INTO users_pswd (user_id, password) VALUES ('" + V_OD_id + L"','" + password + L"')";*/
+
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wusers_qwery.c_str(), SQL_NTS)) {
+        std::cout << "Success insert Users! \n";
     }
     else {
-        std::cout << "Error insert!\n";
+        std::cout << "Error insert Users!\n";
     }
-    //SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"INSERT INTO DB(id, name, login, password) values(default, name, login, password)", SQL_NTS);
     
-    Select_DB(L"Select * from Chat_DB");
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wusers_pswd_qwery.c_str(), SQL_NTS)) {
+        std::cout << "Success insert Users_pswd! \n";
+    }
+    else {
+        std::cout << "Error insert Users_pswd!\n";
+    }
 
-    V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_CHAR, &V_OD_buffer, SQL_RESULT_LEN, &sql_str_length);
+    //Select_DB(L"Select * from users");
+}
 
-    //// Получим значение числа столбцов
-    //V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
-    //std::cout << "Col count: " << V_OD_colanz << std::endl;
+void Server::INSERT_prvt_message(Message msg)
+{
+    std::string send = msg.getSender();
+    std::string rec = msg.getRecipient();
+    std::string txt = msg.getText();
 
-    //V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
-    //std::cout << "Row count: " << sql_str_length << std::endl;
+    std::wstring sender(send.begin(), send.end());
+    std::wstring recipient(rec.begin(), rec.end());
+    std::wstring message(txt.begin(), txt.end());
 
-    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
-        //Выведем на экран данные         
-        std::cout << "Id: " << V_OD_id << ", name: " << V_OD_buffer << std::endl;
+    std::wstring wprvt_message = L"INSERT INTO private_message ( user_sender, user_recipient, message) VALUES ('" + sender + L"', '" + recipient + L"', '" + message + L"')";
+    
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wprvt_message.c_str(), SQL_NTS)) {
+        std::cout << "Success insert private_message! \n";
+    }
+    else {
+        std::cout << "Error insert private_message!\n";
+    }
+}
+
+void Server::INSERT_publc_message(Message msg)
+{
+    std::string send = msg.getSender();
+    std::string rec = msg.getRecipient();
+    std::string txt = msg.getText();
+
+    std::wstring sender(send.begin(), send.end());
+    std::wstring recipient(rec.begin(), rec.end());
+    std::wstring message(txt.begin(), txt.end());
+
+    std::wstring wpublc_message = L"INSERT INTO public_message ( user_sender, user_recipient, message) VALUES ('" + sender + L"', '" + recipient + L"', '" + message + L"')";
+
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wpublc_message.c_str(), SQL_NTS)) {
+        std::cout << "Success insert public_message! \n";
+    }
+    else {
+        std::cout << "Error insert public_message!\n";
     }
 }
 
@@ -251,31 +278,32 @@ void Server::Select_DB(const std::wstring& request)
         return;
     }
 
-    //Объявление структуры данных для результата запроса версии SQL
-    SQLCHAR sqlVersion[SQL_RESULT_LEN];
+    //Объявление структуры данных
     SQLLEN sql_str_length;
     // Переменная для хранения числа столбцов
     SQLSMALLINT    V_OD_colanz, V_OD_rowcount;
     SQLINTEGER   V_OD_err, V_OD_id;
-    SQLCHAR     V_OD_name[200];
-    SQLCHAR     V_OD_login[200];
-    SQLCHAR     V_OD_password[200];
+    SQLVARCHAR     V_OD_name;
+    SQLVARCHAR    V_OD_login;
+    //SQLCHAR*     V_OD_password;
 
     V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
     V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_WCHAR, &V_OD_name, SQL_RESULT_LEN, &sql_str_length);
     V_OD_err = SQLBindCol(sqlStmtHandle, 3, SQL_WCHAR, &V_OD_login, SQL_RESULT_LEN, &sql_str_length);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 4, SQL_WCHAR, &V_OD_password, SQL_RESULT_LEN, &sql_str_length);
+    //V_OD_err = SQLBindCol(sqlStmtHandle, 4, SQL_WCHAR, &V_OD_password, SQL_RESULT_LEN, &sql_str_length);
+
+    
 
     // Получим значение числа столбцов
     V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
-    std::cout << "Col count: " << V_OD_colanz << std::endl;
+    std::cout << "Количество столбцов: " << V_OD_colanz << std::endl;
 
     V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
-    std::cout << "Row count: " << sql_str_length << std::endl;
+    std::cout << "Количество строк: " << sql_str_length << std::endl;
 
     while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
         //Выведем на экран данные          
-        std::cout << "id: " << V_OD_id << ", name: " << V_OD_name << ", login: " << V_OD_login << ", password: " << V_OD_password << std::endl;
+        std::cout << "id: " << V_OD_id << ", name: " << V_OD_name << ", login: " << V_OD_login << std::endl;
     }
 }
 

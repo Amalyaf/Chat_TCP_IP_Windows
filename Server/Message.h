@@ -31,4 +31,19 @@ struct Message
 	{
 		std::cout << _message;
 	}
+
+	std::string getSender()
+	{
+		return _sender;
+	}
+
+	std::string getRecipient()
+	{
+		return _recipient;
+	}
+
+	std::string getText()
+	{
+		return _message;
+	}
 };

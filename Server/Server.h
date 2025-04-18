@@ -11,6 +11,8 @@
 #include <sqltypes.h>
 #include <sql.h>
 #include "Users.h"
+#include "Message.h"
+
 // Need to link with Ws2_32.lib 
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -44,7 +46,9 @@ public:
     void exit();
     void DataBase_Connect();
     void Create_TABLE();
-    void INSERT_DB(Users us);
+    void INSERT_Users(Users us);
+    void INSERT_prvt_message(Message msg);
+    void INSERT_publc_message(Message msg);
     void Select_DB(const std::wstring& request);
     void close_DB();
 };

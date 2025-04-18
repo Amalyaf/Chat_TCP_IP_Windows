@@ -108,7 +108,6 @@ void Chat::registration()
 	{
 		Users user;
 		server.Write("\nРегистрация нового пользователя!\nВведите логин: ");
-		//server.Write("Введите логин: ");
 		user.setLogin(server.Read());
 		server.Write("Введите пароль: ");
 		user.setPassword(server.Read());
@@ -127,7 +126,7 @@ void Chat::registration()
 			//if (count_users == 1) {
 			//	server.Create_TABLE(); // если регистрируется первый пользователь, то создаём новую таблицу в БД
 			//}
-			server.INSERT_DB(user); // добавляем нового пользователя в БД
+			server.INSERT_Users(user); // добавляем нового пользователя в БД
 			c = "n";
 		}
 	}
@@ -158,6 +157,7 @@ void Chat::sendPrivateMessage()
 			server.Write("\nВведите сообщение:\n");
 			message.setMessage(server.Read());
 			allMessage.push_back(message);
+			server.INSERT_prvt_message(message);
 			c = "n";
 		}
 	}
@@ -175,6 +175,7 @@ void Chat::sendPublicMessage()
 		{
 			message._recipient = it->_login;
 			allPublicMessage.push_back(message);
+			server.INSERT_publc_message(message);
 		}
 	}
 
