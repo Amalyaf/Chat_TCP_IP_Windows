@@ -34,8 +34,8 @@ public:
 	void readUsers_DB(); // метод для чтения данных о пользователях из БД
 	void readPrivateMessage(); // метод для чтения личных сообщений из файла
 	void readPublicMessage(); // метод для чтения общих сообщений из файла		
-	void readPrivateMessage_DB(std::string login); // метод для чтения личных сообщений из файла
-	void readPublicMessage_DB(std::string login); // метод для чтения общих сообщений из файла		
+	void readPrivateMessage_DB(std::string login); // метод для чтения личных сообщений из БД
+	void readPublicMessage_DB(std::string login); // метод для чтения общих сообщений из БД		
 	int getReadUsersStatus(); // метод выводит 1, если есть файл userData, иначе -1
 	int getReadUsersStatus_DB(); // метод выводит 1, если есть строка в таблице Users в БД, иначе -1
 	void getChat(); // метод выводит данные пользователя

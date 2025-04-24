@@ -436,10 +436,21 @@ void Server::Select_prvt_msg_DB(const std::wstring& request, int id_recipient)
     V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
     V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
 
+    int count = 0;
     while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
         //Выведем на экран данные 
         if (id_recipient == V_OD_recipient_id) {
+            count++;
+            if (count == 1) {
+                Write("\nУ Вас есть новые личные сообщения!");
+            }
             std::cout << "id: " << V_OD_id << ", user_sender: " << V_OD_sender_id << ", message: " << V_OD_message << std::endl;
+            Write("\nОтправитель: ");
+            Write(std::to_string(V_OD_sender_id));
+            Write("\nСообщение: ");
+            std::string str = reinterpret_cast<char*>(V_OD_message);
+            Write(str);
+            Write("\n");
         }
     }
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
@@ -474,10 +485,21 @@ void Server::Select_pblc_msg_DB(const std::wstring& request, int id_recipient)
     V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
     V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
 
+    int count = 0;
     while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
         //Выведем на экран данные          
         if (id_recipient == V_OD_recipient_id) {
+            count++;
+            if (count == 1) {
+                Write("\nУ Вас есть новые личные сообщения!");
+            }
             std::cout << "id: " << V_OD_id << ", user_sender: " << V_OD_sender_id << ", message: " << V_OD_message << std::endl;
+            Write("\nОтправитель: ");
+            Write(std::to_string(V_OD_sender_id));
+            Write("\nСообщение: ");
+            std::string str = reinterpret_cast<char*>(V_OD_message);
+            Write(str);
+            Write("\n");
         }
     }
 
