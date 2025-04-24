@@ -32,17 +32,17 @@ struct Message
 		std::cout << _message;
 	}
 
-	std::string getSender()
+	const std::string getSender()
 	{
 		return _sender;
 	}
 
-	std::string getRecipient()
+	const std::string getRecipient()
 	{
 		return _recipient;
 	}
 
-	std::string getText()
+	const std::string getText()
 	{
 		return _message;
 	}

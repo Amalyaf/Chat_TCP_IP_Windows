@@ -237,7 +237,9 @@ void Server::Create_TABLE()
 }
 
 void Server::INSERT_Users(Users us)
-{    
+{
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+
     std::string l = us.getLogin();
     std::string p = us.getPassword();
     std::string n = us.getName();  
@@ -247,13 +249,6 @@ void Server::INSERT_Users(Users us)
     std::wstring password(p.begin(), p.end());
     
     std::wstring wusers_qwery = L"INSERT INTO users ( name, login) VALUES ('" + name + L"', '" + login + L"')";
-    std::wstring wusers_pswd_qwery = L"INSERT INTO users_pswd (password) VALUES ('" + password + L"')";
-
-    
-    //Хотела сделать так, чтобы в таблице с паролями было id пользователя, но выдаёт ошибку при добавлении в запрос вставки переменную V_OD_id
-    /*SQLINTEGER   V_OD_err, V_OD_id;
-    V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
-    std::wstring wusers_pswd_qwery = L"INSERT INTO users_pswd (user_id, password) VALUES ('" + V_OD_id + L"','" + password + L"')";*/
 
     if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wusers_qwery.c_str(), SQL_NTS)) {
         std::cout << "Success insert Users! \n";
@@ -261,6 +256,31 @@ void Server::INSERT_Users(Users us)
     else {
         std::cout << "Error insert Users!\n";
     }
+
+    // Получаем последний сгенерированный ID
+    if (SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT LAST_INSERT_ID()", SQL_NTS) != SQL_SUCCESS)
+        std::cout << "Error last ID!\n";
+
+    SQLINTEGER id = -1;
+    SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &id, 0, nullptr);
+    if (SQLFetch(sqlStmtHandle) != SQL_SUCCESS) {
+        std::cout << "Error last ID!\n";
+    }
+
+    /*SQLINTEGER   V_OD_err, V_OD_id;
+    V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);*/
+
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+
+    std::wstring wusers_pswd_qwery = L"INSERT INTO users_pswd (user_id, password) VALUES ('" + std::to_wstring(id) + L"','" + password + L"')";
+
+    //std::wstring wusers_pswd_qwery = L"INSERT INTO users_pswd (password) VALUES ('" + password + L"')";
+
+    
+    //Хотела сделать так, чтобы в таблице с паролями было id пользователя, но выдаёт ошибку при добавлении в запрос вставки переменную V_OD_id
+    
+
+    
     
     if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wusers_pswd_qwery.c_str(), SQL_NTS)) {
         std::cout << "Success insert Users_pswd! \n";
@@ -269,8 +289,10 @@ void Server::INSERT_Users(Users us)
         std::cout << "Error insert Users_pswd!\n";
     }
 
-    //Select_DB(L"Select * from users");
+    Select_DB(L"Select * from users");
+    get_ID_DB(l);
 }
+
 
 void Server::INSERT_prvt_message(Message msg)
 {
@@ -314,6 +336,7 @@ void Server::INSERT_publc_message(Message msg)
 
 void Server::Select_DB(const std::wstring& request)
 {
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
     if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)request.c_str(), SQL_NTS)) {
         std::cout << "Success Select! \n";
     }
@@ -327,16 +350,14 @@ void Server::Select_DB(const std::wstring& request)
     // Переменная для хранения числа столбцов
     SQLSMALLINT    V_OD_colanz, V_OD_rowcount;
     SQLINTEGER   V_OD_err, V_OD_id;
-    SQLVARCHAR     V_OD_name;
-    SQLVARCHAR    V_OD_login;
+    SQLVARCHAR     V_OD_name[240];
+    SQLVARCHAR    V_OD_login[240];
     //SQLCHAR*     V_OD_password;
 
     V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_WCHAR, &V_OD_name, SQL_RESULT_LEN, &sql_str_length);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 3, SQL_WCHAR, &V_OD_login, SQL_RESULT_LEN, &sql_str_length);
+    V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_C_CHAR, &V_OD_login, SQL_RESULT_LEN, &sql_str_length);
+    V_OD_err = SQLBindCol(sqlStmtHandle, 3, SQL_C_CHAR, &V_OD_name, SQL_RESULT_LEN, &sql_str_length);
     //V_OD_err = SQLBindCol(sqlStmtHandle, 4, SQL_WCHAR, &V_OD_password, SQL_RESULT_LEN, &sql_str_length);
-
-    
 
     // Получим значение числа столбцов
     V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
@@ -347,7 +368,47 @@ void Server::Select_DB(const std::wstring& request)
 
     while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
         //Выведем на экран данные          
-        std::cout << "id: " << V_OD_id << ", name: " << V_OD_name << ", login: " << V_OD_login << std::endl;
+        std::cout << "id: " << V_OD_id << ", login: " << V_OD_login << ", name: " << V_OD_name << std::endl;
+    }
+
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+}
+
+void Server::get_ID_DB(std::string l)
+{
+    //// Получаем id
+    //std::wstring wusers_pswd_qwery = L"SELECT id from users where login = '" + std::to_wstring(login) + L"'";
+    //if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wusers_pswd_qwery.c_str(), SQL_NTS)) {
+    //    std::cout << "Success insert Users! \n";
+    //}
+    //else {
+    //    std::cout << "Error insert Users!\n";
+    //}
+
+    /*std::string lgn = us._login;
+    std::wstring login(lgn.begin(), lgn.end());*/
+    std::wstring login(l.begin(), l.end());
+    std::wstring query = L"SELECT id FROM users WHERE login = '" + login + L"'";
+
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE);
+
+    if (SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)query.c_str(), SQL_NTS) != SQL_SUCCESS) {
+        std::cout << "Ошибка при выполнении SELECT по логину!\n";
+        return;
+    }
+
+    SQLINTEGER id;
+    SQLLEN len;
+
+    SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &id, 0, nullptr);
+
+
+    if (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
+        std::cout << "User found:\n";
+        std::cout << "ID: " << id << std::endl;
+    }
+    else {
+        std::cout << "Пользователь с логином '" << l << "' не найден.\n";
     }
 }
 

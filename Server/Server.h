@@ -51,5 +51,6 @@ public:
     void INSERT_prvt_message(Message msg);
     void INSERT_publc_message(Message msg);
     void Select_DB(const std::wstring& request);
+    void get_ID_DB(std::string login);
     void close_DB();
 };
