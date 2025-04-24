@@ -175,7 +175,7 @@ void Chat::sendPublicMessage()
 		{
 			message._recipient = it->_login;
 			allPublicMessage.push_back(message);
-			server.INSERT_publc_message(message);
+			server.INSERT_pblc_message(message);
 		}
 	}
 

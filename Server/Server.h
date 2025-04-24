@@ -49,8 +49,15 @@ public:
     void Create_TABLE();
     void INSERT_Users(Users us);
     void INSERT_prvt_message(Message msg);
-    void INSERT_publc_message(Message msg);
-    void Select_DB(const std::wstring& request);
-    void get_ID_DB(std::string login);
+    void INSERT_pblc_message(Message msg);
+    void Select_Users_DB(const std::wstring& request);
+    void Select_Users_pswd_DB(const std::wstring& request);
+    void Select_prvt_msg_DB(const std::wstring& request);
+    void Select_pblc_msg_DB(const std::wstring& request);
+    int get_ID_DB(std::string login);
+    void get_Users_DB();
+    void get_Users_pswd_DB();
+    void get_private_message_DB(std::string login);
+    void get_public_message_DB(std::string login);
     void close_DB();
 };
