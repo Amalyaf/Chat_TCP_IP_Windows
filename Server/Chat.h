@@ -31,9 +31,13 @@ public:
 	void writeUsers() const; // метод дл€ записи данных о пользовател€х в файл
 	void writeMessage() const; // метод дл€ записи данных о сообщени€х в файл
 	void readUsers(); // метод дл€ чтени€ данных о пользовател€х из файла
+	void readUsers_DB(); // метод дл€ чтени€ данных о пользовател€х из Ѕƒ
 	void readPrivateMessage(); // метод дл€ чтени€ личных сообщений из файла
-	void readPublicMessage(); // метод дл€ чтени€ общих сообщений из файла			   
+	void readPublicMessage(); // метод дл€ чтени€ общих сообщений из файла		
+	void readPrivateMessage_DB(std::string login); // метод дл€ чтени€ личных сообщений из файла
+	void readPublicMessage_DB(std::string login); // метод дл€ чтени€ общих сообщений из файла		
 	int getReadUsersStatus(); // метод выводит 1, если есть файл userData, иначе -1
+	int getReadUsersStatus_DB(); // метод выводит 1, если есть строка в таблице Users в Ѕƒ, иначе -1
 	void getChat(); // метод выводит данные пользовател€
 	void enter(); // авторизаци€ пользовател€
 	void registration(); //  регистраци€ пользовател€
@@ -42,6 +46,7 @@ public:
 	bool getstatus(); // метод выводит статус авторизации (_status)
 	void exit(); // разлогинить авторизованного пользовател€
 	void printMessage(std::string recipient); // вывод на экран новых сообщений
+	void printMessage_DB(std::string recipient); // вывод на экран новых сообщений из Ѕƒ
 	void deletePrivateMessage(std::string recipient); // перемещение прочитанных личных сообщений в viewedMessage и их удаление из allMessage
 	void deletePublicMessage(std::string recipient); // удаление прочитанных общих сообщений из allPublicMessage
 	void printAllMessage(); // вывод на экран всех просмотренных личных сообщений

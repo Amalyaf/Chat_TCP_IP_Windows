@@ -84,7 +84,7 @@ void Chat::enter()
 				{
 					_status = true;
 					c = "n";
-					printMessage(_login);
+					printMessage_DB(_login);
 				}
 			}
 		}
@@ -237,6 +237,12 @@ void Chat::printMessage(std::string recipient)
 	}
 }
 
+void Chat::printMessage_DB(std::string recipient)
+{
+	readPrivateMessage_DB(recipient);
+	readPublicMessage_DB(recipient);
+}
+
 void Chat::deletePrivateMessage(std::string recipient)
 {
 	for (std::vector<Message>::iterator it = allMessage.begin(); it < allMessage.end();)
@@ -340,6 +346,12 @@ void Chat::readUsers() {
 	}
 }
 
+void Chat::readUsers_DB()
+{
+	std::cout << "„тение данных из таюлицы Users!" << std::endl;
+	server.get_Users_DB();
+}
+
 int Chat::getReadUsersStatus() {
 
 	std::fstream file(userData, std::ios::in);
@@ -362,6 +374,16 @@ int Chat::getReadUsersStatus() {
 		}
 	}
 	return 1;
+}
+
+int Chat::getReadUsersStatus_DB()
+{
+	if (server.get_Users_DB_status() == 1) {
+		return 1;
+	}
+	else {
+		return -1;
+	}
 }
 
 void Chat::writeUsers() const {
@@ -522,14 +544,25 @@ void Chat::readPublicMessage() {
 	}
 }
 
+void Chat::readPrivateMessage_DB(std::string login)
+{
+	std::cout << "„тение данных из таблицы private_message!" << std::endl;
+	server.get_private_message_DB(login);
+}
+
+void Chat::readPublicMessage_DB(std::string login)
+{
+	std::cout << "„тение данных из таблицы public_message!" << std::endl;
+	server.get_public_message_DB(login);
+}
+
 
 void Chat::start() {
 	std::string c = "y"; // условие выхода из цикла
-	if (getReadUsersStatus() == 1) { // если есть файл с данными о ранее зарегистрированных пользовател€х,
+	if (getReadUsersStatus_DB() == 1) { // если есть файл с данными о ранее зарегистрированных пользовател€х,
 		// то сначала спрашиваем о регистрации нового пользовател€ и в зависимости от ответа выполн€ем регистрацию
-		getChat(); // вывод пользователей на экран, чтобы было видно логины и пароли 
+		readUsers_DB(); // вывод пользователей на экран, чтобы было видно логины и пароли 
 		server.Write("\n\n’отите зарегистрировать ещЄ одного пользовател€?(y/n)\n");
-		//server.Write(false);
 		c = server.Read();
 	}
 	while (c == "y") {

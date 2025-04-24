@@ -52,12 +52,14 @@ public:
     void INSERT_pblc_message(Message msg);
     void Select_Users_DB(const std::wstring& request);
     void Select_Users_pswd_DB(const std::wstring& request);
-    void Select_prvt_msg_DB(const std::wstring& request);
-    void Select_pblc_msg_DB(const std::wstring& request);
+    void Select_prvt_msg_DB(const std::wstring& request, int id_recipient);
+    void Select_pblc_msg_DB(const std::wstring& request, int id_recipient);
+    int Select_Users_DB_status(const std::wstring& request);
     int get_ID_DB(std::string login);
     void get_Users_DB();
     void get_Users_pswd_DB();
     void get_private_message_DB(std::string login);
     void get_public_message_DB(std::string login);
+    int get_Users_DB_status();
     void close_DB();
 };
