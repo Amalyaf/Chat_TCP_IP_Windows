@@ -174,68 +174,6 @@ void Server::exit()
     closesocket(ClientSocket);
 }
 
-void Server::DataBase_Connect()
-{
-    // Выделяем дескриптор для базы данных
-    if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlEnvHandle))
-        close_DB();
-
-    if (SQL_SUCCESS != SQLSetEnvAttr(sqlEnvHandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0))
-        close_DB();
-
-    if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlEnvHandle, &sqlConnHandle))
-        close_DB();
-
-    std::cout << "Attempting connection to SQL Server...\n";
-
-    // Устанавливаем соединение с сервером  
-    switch (SQLDriverConnect(sqlConnHandle,
-        GetDesktopWindow(),
-        (SQLWCHAR*)L"DRIVER={MySQL ODBC 9.2 ANSI Driver};SERVER=localhost;PORT=3306;DATABASE=chat_db;UID=root;PWD=root;",
-        SQL_NTS,
-        retconstring,
-        1024,
-        NULL,
-        SQL_DRIVER_COMPLETE)) {
-
-
-    case SQL_SUCCESS:
-    case SQL_SUCCESS_WITH_INFO:
-        std::cout << "Successfully connected to SQL Server\n";
-        break;
-
-    case SQL_INVALID_HANDLE:
-    case SQL_ERROR:
-        std::cout << "Could not connect to SQL Server\n";
-        close_DB();
-
-    default:
-        break;
-    }
-
-    // Если соединение не установлено, то выходим из программы
-    if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlConnHandle, &sqlStmtHandle))
-        close_DB();
-
-    std::cout << "\nExecuting T-SQL query...\n";
-
-    // Если выполнение запроса с ошибками, то выходим из программы
-    if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT * from users", SQL_NTS)) {
-        std::cout << "Error querying SQL Server \n";
-        close_DB();
-    }
-}
-
-void Server::Create_TABLE()
-{
-    if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"create table Chat_DB(id int AUTO_INCREMENT PRIMARY KEY, name varchar(255), login varchar(255), password varchar(255))", SQL_NTS)) {
-        std::cout << "Error Create! \n"; 
-    }
-    else {
-        std::cout << "Success create!\n";
-    }
-}
-
 void Server::INSERT_Users(Users us)
 {
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
@@ -286,11 +224,9 @@ void Server::INSERT_prvt_message(Message msg)
     std::string rec = msg.getRecipient();
     std::string txt = msg.getText();
 
-    int sender_id = get_ID_DB(send);
     int recipient_id = get_ID_DB(rec);
 
     std::wstring sender(send.begin(), send.end());
-    /*std::wstring recipient(rec.begin(), rec.end()); */
     std::wstring message(txt.begin(), txt.end());
 
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
@@ -311,12 +247,10 @@ void Server::INSERT_pblc_message(Message msg)
     std::string rec = msg.getRecipient();
     std::string txt = msg.getText();
 
-    int sender_id = get_ID_DB(send);
     int recipient_id = get_ID_DB(rec);
 
 
     std::wstring sender(send.begin(), send.end());
-    /*std::wstring recipient(rec.begin(), rec.end());*/
     std::wstring message(txt.begin(), txt.end());
 
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
@@ -512,7 +446,6 @@ void Server::get_Users_pswd_DB()
 void Server::get_private_message_DB(std::string l)
 {
     int recipient_id = get_ID_DB(l);
-    std::cout << "ID recipient private_message " << recipient_id << std::endl;
     std::wstring request = L"SELECT * from private_message";
 
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
@@ -548,7 +481,7 @@ void Server::get_private_message_DB(std::string l)
         if (recipient_id == V_OD_recipient_id) {
             count++;
             if (count == 1) {
-                Write("\nУ Вас есть новые личные сообщения!");
+                Write("\n----------------------------------------------------------\nУ Вас есть новые личные сообщения!");
             }
             std::cout << "id: " << V_OD_id << ", user_sender: " << V_OD_sender << ", message: " << V_OD_message << std::endl;
             Write("\nОтправитель: ");
@@ -560,14 +493,17 @@ void Server::get_private_message_DB(std::string l)
             Write("\n");
         }
     }
-    //Delete_prvt_msg_DB(recipient_id);
+    if (count != 0) {
+        Write("\n----------------------------------------------------------\n");
+        Delete_prvt_msg_DB(recipient_id);
+    }
+    
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
 }
 
 void Server::get_public_message_DB(std::string l)
 {
     int recipient_id = get_ID_DB(l);
-    std::cout << "ID recipient public_message " << recipient_id << std::endl;
     std::wstring request = L"SELECT * from public_message";
 
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
@@ -603,7 +539,7 @@ void Server::get_public_message_DB(std::string l)
         if (recipient_id == V_OD_recipient_id) {
             count++;
             if (count == 1) {
-                Write("\nУ Вас есть новые общие сообщения!");
+                Write("\n----------------------------------------------------------\nУ Вас есть новые общие сообщения!");
             }
             std::cout << "id: " << V_OD_id << ", user_sender: " << V_OD_sender << ", message: " << V_OD_message << std::endl;
             Write("\nОтправитель: ");
@@ -615,7 +551,11 @@ void Server::get_public_message_DB(std::string l)
             Write("\n");
         }
     }
-    //Delete_pblc_msg_DB(recipient_id);
+    if (count != 0) {
+        Write("\n----------------------------------------------------------\n");
+        Delete_pblc_msg_DB(recipient_id);
+    }
+
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
 }
 

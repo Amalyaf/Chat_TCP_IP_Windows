@@ -46,8 +46,6 @@ public:
     void Write(std::string text);
     std::string Read();
     void exit();
-    void DataBase_Connect();
-    void Create_TABLE();
     void INSERT_Users(Users us);
     void INSERT_prvt_message(Message msg);
     void INSERT_pblc_message(Message msg);
