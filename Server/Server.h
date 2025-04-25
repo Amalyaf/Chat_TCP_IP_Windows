@@ -52,9 +52,9 @@ public:
     void INSERT_pblc_message(Message msg);
     void Select_Users_DB(const std::wstring& request);
     void Select_Users_pswd_DB(const std::wstring& request);
-    void Select_prvt_msg_DB(const std::wstring& request, int id_recipient);
-    void Select_pblc_msg_DB(const std::wstring& request, int id_recipient);
     int Select_Users_DB_status(const std::wstring& request);
+    void Delete_prvt_msg_DB(int id);
+    void Delete_pblc_msg_DB(int id);
     int get_ID_DB(std::string login);
     void get_Users_DB();
     void get_Users_pswd_DB();

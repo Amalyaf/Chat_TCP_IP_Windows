@@ -406,105 +406,6 @@ void Server::Select_Users_pswd_DB(const std::wstring& request)
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
 }
 
-void Server::Select_prvt_msg_DB(const std::wstring& request, int id_recipient)
-{
-    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
-    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)request.c_str(), SQL_NTS)) {
-        std::cout << "Success Select! \n";
-    }
-    else {
-        std::cout << "Error select!\n";
-        return;
-    }
-
-    //Объявление структуры данных
-    SQLLEN sql_str_length;
-    // Переменная для хранения числа столбцов
-    SQLSMALLINT    V_OD_colanz, V_OD_rowcount;
-    SQLINTEGER   V_OD_err, V_OD_id;
-    SQLINTEGER     V_OD_sender_id;
-    SQLINTEGER    V_OD_recipient_id;
-    SQLVARCHAR    V_OD_message[240];
-
-    V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_INTEGER, &V_OD_sender_id, sizeof(V_OD_sender_id), nullptr);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 3, SQL_INTEGER, &V_OD_recipient_id, sizeof(V_OD_recipient_id), nullptr);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 4, SQL_C_CHAR, &V_OD_message, SQL_RESULT_LEN, &sql_str_length);
-
-
-    // Получим значение числа столбцов
-    V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
-    V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
-
-    int count = 0;
-    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
-        //Выведем на экран данные 
-        if (id_recipient == V_OD_recipient_id) {
-            count++;
-            if (count == 1) {
-                Write("\nУ Вас есть новые личные сообщения!");
-            }
-            std::cout << "id: " << V_OD_id << ", user_sender: " << V_OD_sender_id << ", message: " << V_OD_message << std::endl;
-            Write("\nОтправитель: ");
-            Write(std::to_string(V_OD_sender_id));
-            Write("\nСообщение: ");
-            std::string str = reinterpret_cast<char*>(V_OD_message);
-            Write(str);
-            Write("\n");
-        }
-    }
-    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
-}
-
-void Server::Select_pblc_msg_DB(const std::wstring& request, int id_recipient)
-{
-    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
-    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)request.c_str(), SQL_NTS)) {
-        std::cout << "Success Select! \n";
-    }
-    else {
-        std::cout << "Error select!\n";
-        return;
-    }
-
-    //Объявление структуры данных
-    SQLLEN sql_str_length;
-    // Переменная для хранения числа столбцов
-    SQLSMALLINT    V_OD_colanz, V_OD_rowcount;
-    SQLINTEGER   V_OD_err, V_OD_id;
-    SQLINTEGER     V_OD_sender_id;
-    SQLINTEGER    V_OD_recipient_id;
-    SQLVARCHAR    V_OD_message[240];
-
-    V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_INTEGER, &V_OD_sender_id, sizeof(V_OD_sender_id), nullptr);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 3, SQL_INTEGER, &V_OD_recipient_id, sizeof(V_OD_recipient_id), nullptr);
-    V_OD_err = SQLBindCol(sqlStmtHandle, 4, SQL_C_CHAR, &V_OD_message, SQL_RESULT_LEN, &sql_str_length);
-
-    // Получим значение числа столбцов
-    V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
-    V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
-
-    int count = 0;
-    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
-        //Выведем на экран данные          
-        if (id_recipient == V_OD_recipient_id) {
-            count++;
-            if (count == 1) {
-                Write("\nУ Вас есть новые личные сообщения!");
-            }
-            std::cout << "id: " << V_OD_id << ", user_sender: " << V_OD_sender_id << ", message: " << V_OD_message << std::endl;
-            Write("\nОтправитель: ");
-            Write(std::to_string(V_OD_sender_id));
-            Write("\nСообщение: ");
-            std::string str = reinterpret_cast<char*>(V_OD_message);
-            Write(str);
-            Write("\n");
-        }
-    }
-
-    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
-}
 
 int Server::Select_Users_DB_status(const std::wstring& request)
 {
@@ -539,6 +440,36 @@ int Server::Select_Users_DB_status(const std::wstring& request)
 
     else {
         return -1;
+    }
+}
+
+void Server::Delete_prvt_msg_DB(int id)
+{
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+
+    std::wstring wquery = L"Delete from private_message where user_id_recipient = '" + std::to_wstring(id) + L"'";
+
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wquery.c_str(), SQL_NTS)) {
+        std::cout << "Success delete from private_message! \n";
+    }
+    else {
+        std::cout << "Error delete from private_message!\n";
+        return ;
+    }
+}
+
+void Server::Delete_pblc_msg_DB(int id)
+{
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+
+    std::wstring wquery = L"Delete from public_message where user_id_recipient = '" + std::to_wstring(id) + L"'";
+
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wquery.c_str(), SQL_NTS)) {
+        std::cout << "Success delete from public_message! \n";
+    }
+    else {
+        std::cout << "Error delete from public_message!\n";
+        return;
     }
 }
 
@@ -593,17 +524,112 @@ void Server::get_Users_pswd_DB()
 
 void Server::get_private_message_DB(std::string l)
 {
+    std::cout << "\n\nВход в функцию get_private_message_DB\n\n";
     int recipient_id = get_ID_DB(l);
     std::cout << "ID recipient private_message " << recipient_id << std::endl;
-    Select_prvt_msg_DB(L"SELECT * from private_message", recipient_id);
+    std::wstring request = L"SELECT * from private_message";
+
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)request.c_str(), SQL_NTS)) {
+        std::cout << "Success Select! \n";
+    }
+    else {
+        std::cout << "Error select!\n";
+        return;
+    }
+
+    //Объявление структуры данных
+    SQLLEN sql_str_length;
+    // Переменная для хранения числа столбцов
+    SQLSMALLINT    V_OD_colanz, V_OD_rowcount;
+    SQLINTEGER   V_OD_err, V_OD_id;
+    SQLINTEGER     V_OD_sender_id;
+    SQLINTEGER    V_OD_recipient_id;
+    SQLVARCHAR    V_OD_message[240];
+
+    V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
+    V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_INTEGER, &V_OD_sender_id, sizeof(V_OD_sender_id), nullptr);
+    V_OD_err = SQLBindCol(sqlStmtHandle, 3, SQL_INTEGER, &V_OD_recipient_id, sizeof(V_OD_recipient_id), nullptr);
+    V_OD_err = SQLBindCol(sqlStmtHandle, 4, SQL_C_CHAR, &V_OD_message, SQL_RESULT_LEN, &sql_str_length);
+
+
+    // Получим значение числа столбцов
+    V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
+    V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
+
+    int count = 0;
+    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
+        //Выведем на экран данные 
+        if (recipient_id == V_OD_recipient_id) {
+            count++;
+            if (count == 1) {
+                Write("\nУ Вас есть новые личные сообщения!");
+            }
+            std::cout << "id: " << V_OD_id << ", user_sender: " << V_OD_sender_id << ", message: " << V_OD_message << std::endl;
+            Write("\nОтправитель: ");
+            Write(std::to_string(V_OD_sender_id));
+            Write("\nСообщение: ");
+            std::string str = reinterpret_cast<char*>(V_OD_message);
+            Write(str);
+            Write("\n");
+        }
+    }
+    Delete_prvt_msg_DB(recipient_id);
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
 }
 
 void Server::get_public_message_DB(std::string l)
 {
     int recipient_id = get_ID_DB(l);
     std::cout << "ID recipient public_message " << recipient_id << std::endl;
-    //Select_pblc_msg_DB(L"SELECT user_id_sender, message FROM public_message WHERE user_id_recipient = '" + std::to_wstring(recipient_id) + L"'");
-    Select_pblc_msg_DB(L"SELECT * from public_message", recipient_id);
+    std::wstring request = L"SELECT * from public_message";
+
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)request.c_str(), SQL_NTS)) {
+        std::cout << "Success Select! \n";
+    }
+    else {
+        std::cout << "Error select!\n";
+        return;
+    }
+
+    //Объявление структуры данных
+    SQLLEN sql_str_length;
+    // Переменная для хранения числа столбцов
+    SQLSMALLINT    V_OD_colanz, V_OD_rowcount;
+    SQLINTEGER   V_OD_err, V_OD_id;
+    SQLINTEGER     V_OD_sender_id;
+    SQLINTEGER    V_OD_recipient_id;
+    SQLVARCHAR    V_OD_message[240];
+
+    V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
+    V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_INTEGER, &V_OD_sender_id, sizeof(V_OD_sender_id), nullptr);
+    V_OD_err = SQLBindCol(sqlStmtHandle, 3, SQL_INTEGER, &V_OD_recipient_id, sizeof(V_OD_recipient_id), nullptr);
+    V_OD_err = SQLBindCol(sqlStmtHandle, 4, SQL_C_CHAR, &V_OD_message, SQL_RESULT_LEN, &sql_str_length);
+
+    // Получим значение числа столбцов
+    V_OD_err = SQLNumResultCols(sqlStmtHandle, &V_OD_colanz);
+    V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
+
+    int count = 0;
+    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
+        //Выведем на экран данные          
+        if (recipient_id == V_OD_recipient_id) {
+            count++;
+            if (count == 1) {
+                Write("\nУ Вас есть новые личные сообщения!");
+            }
+            std::cout << "id: " << V_OD_id << ", user_sender: " << V_OD_sender_id << ", message: " << V_OD_message << std::endl;
+            Write("\nОтправитель: ");
+            Write(std::to_string(V_OD_sender_id));
+            Write("\nСообщение: ");
+            std::string str = reinterpret_cast<char*>(V_OD_message);
+            Write(str);
+            Write("\n");
+        }
+    }
+    Delete_pblc_msg_DB(recipient_id);
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
 }
 
 int Server::get_Users_DB_status()
