@@ -114,7 +114,7 @@ void Client::start()
 {
     init();
     while (true) {
-        Read();
+            Read();
         if (status == "Exit") {
             break;
         }

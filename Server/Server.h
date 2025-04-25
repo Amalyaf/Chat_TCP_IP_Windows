@@ -35,6 +35,7 @@ private:
     SQLHANDLE sqlConnHandle{ nullptr }; // дескриптор для соединения с базой данных
     SQLHANDLE sqlEnvHandle{ nullptr }; // дескриптор окружения базы данных
     SQLHANDLE sqlStmtHandle{ nullptr };  // дескриптор для выполнения запросов к базе данных
+    SQLHANDLE sqlStmtHandle1{ nullptr };
     SQLWCHAR retconstring[SQL_RETURN_CODE_LEN]{}; // строка для кода возврата из функций API ODBC
 public:
     Server();
@@ -50,8 +51,6 @@ public:
     void INSERT_Users(Users us);
     void INSERT_prvt_message(Message msg);
     void INSERT_pblc_message(Message msg);
-    void Select_Users_DB(const std::wstring& request);
-    void Select_Users_pswd_DB(const std::wstring& request);
     int Select_Users_DB_status(const std::wstring& request);
     void Delete_prvt_msg_DB(int id);
     void Delete_pblc_msg_DB(int id);
