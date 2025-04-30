@@ -17,11 +17,11 @@ Chat::Chat()
 		readPublicMessage();
 	}
 	if (server.init() == 0) {
-		//std::cout << "Server successfully connected!" << std::endl;
+		log.WriteLog("Server successfully connected!");
 		status_connect = "Yes";
 	}
 	else {
-		//std::cout << "Server not connected!" << std::endl;
+		log.WriteLog("Server not connected!");
 		status_connect = "No";
 	}
 }

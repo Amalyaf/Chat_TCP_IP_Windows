@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "Server.h"
-//#include "C:\Users\Amalya\source\repos\DB\Chat_TCP_IP_Windows\Client\Check.h"
+#include "Logger.h"
 
 constexpr auto userData = "C:/Windows/Temp/Chat/userData.txt";	// файл для хранения данных пользователей 
 constexpr auto user_count = "C:/Windows/Temp/Chat/user_count.txt";	// файл для хранения кол-ва зарегистрированных пользователей
@@ -24,6 +24,7 @@ private:
 	std::vector<Message>viewedMessage; // просмотренные сообщения
 	bool _status = false; // если был выполнен вход статус = true, в противном случае - false.
 	Server server;
+	Logger log;
 	int count_users = 0; // кол-во зарегистрированных пользователей
 public:
 	Chat(); // конструктор
