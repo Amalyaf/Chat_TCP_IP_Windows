@@ -2,11 +2,12 @@
 
 Logger::Logger()
 {
-	fileLog.is_open();
+	fileLog.open(logger, std::ios::in | std::ios::out | std::ios::app);
 }
 
 Logger::~Logger()
 {
+	std::cout << "Удаление и закрытие лога" << std::endl;
 	fileLog.close();
 }
 
@@ -22,6 +23,7 @@ void Logger::WriteLog(std::string str)
 
 void Logger::ReadLog()
 {
+	fileLog.seekg(0);
 	if (fileLog.is_open()) {
 		std::string str;
 		// Построчное чтение файла

@@ -10,12 +10,12 @@ std::string status_connect = "No";
 
 Chat::Chat()
 {
-	// если есть файл с данными ранее зарегистрированных пользователей, то вызвать методы для считывания данных из файлов
-	if (getReadUsersStatus() == 1) {
-		readUsers();
-		readPrivateMessage();
-		readPublicMessage();
-	}
+	//// если есть файл с данными ранее зарегистрированных пользователей, то вызвать методы для считывания данных из файлов
+	//if (getReadUsersStatus() == 1) {
+	//	readUsers();
+	//	readPrivateMessage();
+	//	readPublicMessage();
+	//}
 	if (server.init() == 0) {
 		log.WriteLog("Server successfully connected!");
 		status_connect = "Yes";
@@ -27,11 +27,14 @@ Chat::Chat()
 }
 
 Chat::~Chat() {
-	writeUsers(); // метод для записи данных зарегистрированных пользователей в файл
-	writeMessage(); // метод для записи личных и публичных сообщений в отдельные файлы
+	//writeUsers(); // метод для записи данных зарегистрированных пользователей в файл
+	//writeMessage(); // метод для записи личных и публичных сообщений в отдельные файлы
+	std::cout << "Деструктор ЧАТА" << std::endl;
+	log.ReadLog();
 	if (status_connect == "Yes") {
 		server.Write("Exit");
 	}
+	
 	server.exit();
 }
 
@@ -128,17 +131,26 @@ void Chat::registration()
 		server.Write("Введите имя: ");
 		user.setName(server.Read());
 		std::vector<Users>::iterator result = find(allUsers.begin(), allUsers.end(), user);
-		if (result != allUsers.end())
-		{
+
+		//// При чтении из БД
+		if (server.Select_Users_DB(user.getLogin()) == 1) {
 			server.Write("\nПользователь с таким логином уже существует!\nХотите повторить попытку?(y/n): ");
 			c = server.Read();
 		}
+
+		// При чтении из файла
+		/*if (result != allUsers.end())
+		{
+			server.Write("\nПользователь с таким логином уже существует!\nХотите повторить попытку?(y/n): ");
+			c = server.Read();
+		}*/
 		else
 		{
+			std::cout << "Добавление нового пользователя в БД" << std::endl;
 			count_users++;
+			c = "n";
 			allUsers.push_back(user);
 			server.INSERT_Users(user); // добавляем нового пользователя в БД
-			c = "n";
 		}
 	}
 }
@@ -572,7 +584,7 @@ void Chat::start() {
 	std::string c = "y"; // условие выхода из цикла
 	if (getReadUsersStatus_DB() == 1) { // если есть файл с данными о ранее зарегистрированных пользователях,
 		// то сначала спрашиваем о регистрации нового пользователя и в зависимости от ответа выполняем регистрацию
-		readUsers_DB(); // вывод пользователей на экран, чтобы было видно логины и пароли 
+		//readUsers_DB(); // вывод пользователей на экран, чтобы было видно логины и пароли 
 		server.Write("\n\nДобро пожаловать в чат!\nВ БД уже есть зарегистрированные пользователи.\nХотите зарегистрировать ещё одного пользователя?(y/n)\n");
 		c = server.Read();
 	}
