@@ -48,8 +48,6 @@ void Chat::getChat()
 		server.Write(it->getName());
 		server.Write("\n");
 	}
-	
-	//server.Write(false);
 }
 
 void Chat::enter()
@@ -63,27 +61,43 @@ void Chat::enter()
 			_login = server.Read();
 			Users user;
 			user._login = _login;
-			std::vector<Users>::iterator result = find(allUsers.begin(), allUsers.end(), user);
 
-			if (result == allUsers.end())
-			{
+			//// При чтении из БД
+			if (server.Select_Users_DB(_login) != 1) {
+				std::cout << " BADLOGIN!!!" << std::endl;
 				throw BadLogin();
 			}
 
+			// При чтении из файла
+			/*std::vector<Users>::iterator result = find(allUsers.begin(), allUsers.end(), user);
+			if (result == allUsers.end())
+			{
+				throw BadLogin();
+			}*/
+
 			else
 			{
-				user = *result;
+				//user = *result;
 				server.Write("Введите пароль: ");
 				_password = server.Read();
 
-				if (user._password != _password)
-				{
+				// При чтении из БД
+				if (server.Select_UsersPswd_DB(_login, _password) != 1) {
+					log.WriteLog("Введён неправильный пароль для учётной записи пользователя " + _login);
 					throw BadPassword();
 				}
+
+				// При чтении из файла
+				/*if (user._password != _password)
+				{
+					log.WriteLog("Введён неправильный пароль для учётной записи пользователя " + _login);
+					throw BadPassword();
+				}*/
 				else
 				{
 					_status = true;
 					c = "n";
+					log.WriteLog("Выполнен вход под учётной записью пользователя " + _login);
 					printMessage_DB(_login);
 				}
 			}
@@ -123,9 +137,6 @@ void Chat::registration()
 		{
 			count_users++;
 			allUsers.push_back(user);
-			//if (count_users == 1) {
-			//	server.Create_TABLE(); // если регистрируется первый пользователь, то создаём новую таблицу в БД
-			//}
 			server.INSERT_Users(user); // добавляем нового пользователя в БД
 			c = "n";
 		}

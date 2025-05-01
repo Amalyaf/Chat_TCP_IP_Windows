@@ -50,6 +50,8 @@ public:
     void INSERT_prvt_message(Message msg); // запись данных в таблицу private_message
     void INSERT_pblc_message(Message msg); // запись данных в таблицу public_message
     int Select_Users_DB_status(const std::wstring& request); // выборка для метода get_Users_DB_status()
+    int Select_Users_DB(std::string login);
+    int Select_UsersPswd_DB(std::string login, std::string password);
     void Delete_prvt_msg_DB(int id); // удаление уже прочитанных сообщений из таблицы private_message
     void Delete_pblc_msg_DB(int id); // удаление уже прочитанных сообщений из таблицы public_message
     int get_ID_DB(std::string login); // получение id по логину

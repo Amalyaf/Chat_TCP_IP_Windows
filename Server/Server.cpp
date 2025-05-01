@@ -301,6 +301,79 @@ int Server::Select_Users_DB_status(const std::wstring& request)
     }
 }
 
+int Server::Select_Users_DB(std::string login)
+{
+    
+    std::wstring lgn(login.begin(), login.end());
+    int _id = get_ID_DB(login);
+    std::wstring wquery = L"Select * from users";
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+    if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wquery.c_str(), SQL_NTS)) {
+        std::cout << "Success select from Users! \n";
+    }
+    else {
+        std::cout << "Error select from Users!\n";
+        return -1;
+    }
+
+    SQLINTEGER id;
+    SQLLEN len;
+    SQLVARCHAR    V_OD_login[240];
+    SQLLEN sql_str_length;
+
+    SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &id, 0, nullptr);
+    SQLBindCol(sqlStmtHandle, 2, SQL_C_CHAR, &V_OD_login, SQL_RESULT_LEN, &sql_str_length);
+
+    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
+        if (login == reinterpret_cast<char*>(V_OD_login)) {
+            if (_id == id) {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        }
+    }
+
+    return -1;
+}
+
+int Server::Select_UsersPswd_DB(std::string login, std::string password)
+{
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+    int _id = get_ID_DB(login);
+
+    std::wstring query = L"SELECT * FROM users_pswd";
+
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE);
+
+    if (SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)query.c_str(), SQL_NTS) != SQL_SUCCESS) {
+        std::cout << "Ошибка при выполнении SELECT по паролю!\n";
+        return -1;
+    }
+
+    SQLINTEGER user_id;
+    SQLLEN len;
+    SQLVARCHAR    V_OD_password[240];
+    SQLLEN sql_str_length;
+
+    SQLBindCol(sqlStmtHandle, 2, SQL_INTEGER, &user_id, 0, nullptr);
+    SQLBindCol(sqlStmtHandle, 3, SQL_C_CHAR, &V_OD_password, SQL_RESULT_LEN, &sql_str_length);
+
+    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
+            if (_id == user_id) {
+                if (password == reinterpret_cast<char*>(V_OD_password)) {
+                    return 1;
+                }
+     
+                else {
+                    return -1;
+                }
+            }
+        }
+    return -1;
+}
+
 void Server::Delete_prvt_msg_DB(int id)
 {
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
@@ -561,7 +634,7 @@ void Server::get_public_message_DB(std::string l)
 
 int Server::get_Users_DB_status()
 {
-    if (Select_Users_DB_status(L"SELECT EXISTS(SELECT 1 FROM Users WHERE id = 1)") == 1) {
+    if (Select_Users_DB_status(L"SELECT * from users") == 1) {
         return 1;
     }
     else {
