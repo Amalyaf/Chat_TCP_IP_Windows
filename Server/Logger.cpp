@@ -13,6 +13,7 @@ Logger::~Logger()
 
 void Logger::WriteLog(std::string str)
 {
+	std::cout << "Метод WRITE()" << std::endl;
 	mutex.lock();
 	ss.str("");
 	ss << std::put_time(std::localtime(&time), "%F %T: ");
@@ -23,6 +24,7 @@ void Logger::WriteLog(std::string str)
 
 void Logger::ReadLog()
 {
+	std::cout << "Метод READ()" << std::endl;
 	fileLog.seekg(0);
 	if (fileLog.is_open()) {
 		std::string str;
@@ -33,4 +35,12 @@ void Logger::ReadLog()
 		}
 		mutex.unlock_shared();
 	}
+}
+
+void Logger::start(std::string str)
+{
+	std::thread t1(&Logger::WriteLog, this, str);
+	std::thread t2(&Logger::ReadLog, this);
+	t1.join();
+	t2.join();
 }

@@ -243,19 +243,19 @@ void Server::INSERT_prvt_message(Message msg)
 
 void Server::INSERT_pblc_message(Message msg)
 {
+    std::cout << "Зашли в функию INSERT_pblc_message" << std::endl;
     std::string send = msg.getSender();
     std::string rec = msg.getRecipient();
     std::string txt = msg.getText();
 
     int recipient_id = get_ID_DB(rec);
 
-
     std::wstring sender(send.begin(), send.end());
     std::wstring message(txt.begin(), txt.end());
 
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
 
-    std::wstring wpublc_message = L"INSERT INTO public_message ( user_sender, user_id_recipient, message) VALUES ('" + sender + L"', '" + std::to_wstring(recipient_id) + L"', '" + message + L"')";
+    std::wstring wpublc_message = L"INSERT INTO public_message ( user_sender, user_id_recipient, message) VALUES ('" + sender + L"', '" + std::to_wstring(recipient_id) + L"' , '" + message + L"')";
 
     if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wpublc_message.c_str(), SQL_NTS)) {
         std::cout << "Success insert public_message! \n";
@@ -263,6 +263,8 @@ void Server::INSERT_pblc_message(Message msg)
     else {
         std::cout << "Error insert public_message!\n";
     }
+
+    SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
 }
 
 int Server::Select_Users_DB_status(const std::wstring& request)

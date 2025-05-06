@@ -11,23 +11,23 @@ std::string status_connect = "No";
 Chat::Chat()
 {
 	//// если есть файл с данными ранее зарегистрированных пользователей, то вызвать методы для считывания данных из файлов
-	//if (getReadUsersStatus() == 1) {
-	//	readUsers();
+	if (getReadUsersStatus() == 1) {
+		readUsers();
 	//	readPrivateMessage();
 	//	readPublicMessage();
-	//}
+	}
 	if (server.init() == 0) {
-		log.WriteLog("Server successfully connected!");
+		log.start("Server successfully connected!");
 		status_connect = "Yes";
 	}
 	else {
-		log.WriteLog("Server not connected!");
+		log.start("Server not connected!");
 		status_connect = "No";
 	}
 }
 
 Chat::~Chat() {
-	//writeUsers(); // метод для записи данных зарегистрированных пользователей в файл
+	writeUsers(); // метод для записи данных зарегистрированных пользователей в файл
 	//writeMessage(); // метод для записи личных и публичных сообщений в отдельные файлы
 	std::cout << "Деструктор ЧАТА" << std::endl;
 	log.ReadLog();
@@ -67,7 +67,6 @@ void Chat::enter()
 
 			//// При чтении из БД
 			if (server.Select_Users_DB(_login) != 1) {
-				std::cout << " BADLOGIN!!!" << std::endl;
 				throw BadLogin();
 			}
 
@@ -159,14 +158,15 @@ void Chat::sendPrivateMessage()
 {
 	std::string c = "y";
 	_sender = _login;
+
 	while (c != "n")
 	{
 		server.Write("Кому: ");
 		_recipient = server.Read();
 		Users user;
 		user._login = _recipient;
-		std::vector<Users>::iterator result = find(allUsers.begin(), allUsers.end(), user);
-		if (result == allUsers.end())
+		//std::vector<Users>::iterator result = find(allUsers.begin(), allUsers.end(), user);
+		if (server.Select_Users_DB(_recipient) != 1)
 		{
 			server.Write("\nПолучатель не найден!\nХотите повторить попытку?(y/n): ");
 			c = server.Read();
@@ -192,16 +192,17 @@ void Chat::sendPublicMessage()
 	message._sender = _login;
 	server.Write("\nВведите групповое сообщение:\n");
 	message.setMessage(server.Read());
+
 	for (std::vector<Users>::iterator it = allUsers.begin(); it < allUsers.end(); it++)
 	{
 		if (it->_login != _login)
 		{
 			message._recipient = it->_login;
 			allPublicMessage.push_back(message);
-			server.INSERT_pblc_message(message);
+			std::cout << "Перед server.INSERT_pblc_message(message)" << std::endl;
+	 server.INSERT_pblc_message(message);
 		}
 	}
-
 	//message._recipient = "all";
 	viewedMessage.push_back(message);
 }
@@ -622,9 +623,11 @@ void Chat::start() {
 
 				switch (message) {
 				case '1':
+					std::cout << "приватное сообщение" << std::endl;
 					sendPrivateMessage();
 					break;
 				case '2':
+					std::cout << "общее сообщение" << std::endl;
 					sendPublicMessage();
 					break;
 				default:

@@ -8,7 +8,7 @@
 #include <sstream>
 #include <iomanip>
 #include <shared_mutex>
-
+#include <thread>
 
 class Logger
 {
@@ -23,5 +23,6 @@ public:
 	~Logger();
 	void WriteLog(std::string str);
 	void ReadLog();
+	void start(std::string str);
 };
 
