@@ -5,8 +5,12 @@
 #include <filesystem>
 #include <fstream>
 #include <cstdlib>
+#include <thread>
+#include <shared_mutex>
+#include <chrono>
 
 std::string status_connect = "No";
+using namespace std::chrono_literals;
 
 Chat::Chat()
 {
@@ -17,11 +21,16 @@ Chat::Chat()
 	//	readPublicMessage();
 	}
 	if (server.init() == 0) {
-		log.start("Server successfully connected!");
+		//std::this_thread::sleep_for(100ms);
+		std::thread t1(&Logger::WriteLog, std::ref(log), "Server successfully connected!");
+		std::thread t2(&Logger::ReadLog, std::ref(log));
+		t1.join();
+		t2.join();
 		status_connect = "Yes";
 	}
 	else {
-		log.start("Server not connected!");
+		std::thread t1(&Logger::WriteLog, std::ref(log), "Server not connected!");
+		t1.join();
 		status_connect = "No";
 	}
 }
@@ -29,8 +38,11 @@ Chat::Chat()
 Chat::~Chat() {
 	writeUsers(); // метод для записи данных зарегистрированных пользователей в файл
 	//writeMessage(); // метод для записи личных и публичных сообщений в отдельные файлы
-	std::cout << "Деструктор ЧАТА" << std::endl;
-	log.ReadLog();
+
+	std::thread t1(&Logger::WriteLog, std::ref(log), "Закрытие чата!\n");
+	std::thread t2(&Logger::ReadLog, std::ref(log));
+	t1.join();
+	t2.join();
 	if (status_connect == "Yes") {
 		server.Write("Exit");
 	}
@@ -65,6 +77,9 @@ void Chat::enter()
 			Users user;
 			user._login = _login;
 
+			std::thread t1(&Logger::WriteLog, std::ref(log), "Попытка входа под учётной записью " + _login);
+			t1.join();
+
 			//// При чтении из БД
 			if (server.Select_Users_DB(_login) != 1) {
 				throw BadLogin();
@@ -85,7 +100,8 @@ void Chat::enter()
 
 				// При чтении из БД
 				if (server.Select_UsersPswd_DB(_login, _password) != 1) {
-					log.WriteLog("Введён неправильный пароль для учётной записи пользователя " + _login);
+					std::thread t1(&Logger::WriteLog, std::ref(log), "Введён неправильный пароль для учётной записи пользователя " + _login);
+					t1.join();
 					throw BadPassword();
 				}
 
@@ -99,7 +115,8 @@ void Chat::enter()
 				{
 					_status = true;
 					c = "n";
-					log.WriteLog("Выполнен вход под учётной записью пользователя " + _login);
+					std::thread t1(&Logger::WriteLog, std::ref(log), "Выполнен вход под учётной записью пользователя " + _login);
+					t1.join();
 					printMessage_DB(_login);
 				}
 			}
@@ -124,17 +141,24 @@ void Chat::registration()
 	{
 		Users user;
 		server.Write("\nДобро пожаловать в чат!\nРегистрация нового пользователя!\nВведите логин: ");
-		user.setLogin(server.Read());
+		std::string login = server.Read();
+		user.setLogin(login);
 		server.Write("Введите пароль: ");
 		user.setPassword(server.Read());
 		server.Write("Введите имя: ");
 		user.setName(server.Read());
 		std::vector<Users>::iterator result = find(allUsers.begin(), allUsers.end(), user);
 
+		std::thread t1(&Logger::WriteLog, std::ref(log), "Регистрация нового пользователя");
+		t1.join();
+
 		//// При чтении из БД
 		if (server.Select_Users_DB(user.getLogin()) == 1) {
 			server.Write("\nПользователь с таким логином уже существует!\nХотите повторить попытку?(y/n): ");
 			c = server.Read();
+
+			std::thread t1(&Logger::WriteLog, std::ref(log), "Пользователь с логином " + login + " уже существует!");
+			t1.join();
 		}
 
 		// При чтении из файла
@@ -150,6 +174,9 @@ void Chat::registration()
 			c = "n";
 			allUsers.push_back(user);
 			server.INSERT_Users(user); // добавляем нового пользователя в БД
+
+			std::thread t1(&Logger::WriteLog, std::ref(log), "Пользователь с логином " + login + " успешно зарегистрирован");
+			t1.join();
 		}
 	}
 }
@@ -182,6 +209,8 @@ void Chat::sendPrivateMessage()
 			allMessage.push_back(message);
 			server.INSERT_prvt_message(message);
 			c = "n";
+			std::thread t1(&Logger::WriteLog, std::ref(log), "Пользователь " + _sender + " успешно отправил сообщение пользователю " + _recipient);
+			t1.join();
 		}
 	}
 }
@@ -199,12 +228,13 @@ void Chat::sendPublicMessage()
 		{
 			message._recipient = it->_login;
 			allPublicMessage.push_back(message);
-			std::cout << "Перед server.INSERT_pblc_message(message)" << std::endl;
-	 server.INSERT_pblc_message(message);
+			server.INSERT_pblc_message(message);
 		}
 	}
 	//message._recipient = "all";
 	viewedMessage.push_back(message);
+	std::thread t1(&Logger::WriteLog, std::ref(log), "Пользователь " + _login + " успешно отправил групповое сообщение");
+	t1.join();
 }
 
 void Chat::printMessage(std::string recipient)
@@ -372,7 +402,6 @@ void Chat::readUsers() {
 
 void Chat::readUsers_DB()
 {
-	std::cout << "Чтение данных из таюлицы Users!" << std::endl;
 	server.get_Users_DB();
 }
 
@@ -570,13 +599,13 @@ void Chat::readPublicMessage() {
 
 void Chat::readPrivateMessage_DB(std::string login)
 {
-	std::cout << "Чтение данных из таблицы private_message!" << std::endl;
+	std::cout << "\PRINT PRIVATE MESSAGE!\n";
 	server.get_private_message_DB(login);
 }
 
 void Chat::readPublicMessage_DB(std::string login)
 {
-	std::cout << "Чтение данных из таблицы public_message!" << std::endl;
+	std::cout << "\PRINT PUBLIC MESSAGE!\n";
 	server.get_public_message_DB(login);
 }
 
@@ -623,11 +652,9 @@ void Chat::start() {
 
 				switch (message) {
 				case '1':
-					std::cout << "приватное сообщение" << std::endl;
 					sendPrivateMessage();
 					break;
 				case '2':
-					std::cout << "общее сообщение" << std::endl;
 					sendPublicMessage();
 					break;
 				default:

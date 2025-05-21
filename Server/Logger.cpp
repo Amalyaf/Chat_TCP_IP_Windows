@@ -7,16 +7,20 @@ Logger::Logger()
 
 Logger::~Logger()
 {
-	std::cout << "Удаление и закрытие лога" << std::endl;
 	fileLog.close();
 }
 
 void Logger::WriteLog(std::string str)
 {
-	std::cout << "Метод WRITE()" << std::endl;
 	mutex.lock();
-	ss.str("");
+	time_t time = std::time(nullptr); // переменная для хранения текущего времени
+	std::stringstream ss; // для преобразования времени в строку
+
 	ss << std::put_time(std::localtime(&time), "%F %T: ");
+
+	fileLog.clear();  // Сброс состояния
+	fileLog.seekp(0, std::ios::end);  // Писать в конец файла
+
 	auto s = ss.str();
 	fileLog << s << str << std::endl;
 	mutex.unlock();
@@ -24,23 +28,16 @@ void Logger::WriteLog(std::string str)
 
 void Logger::ReadLog()
 {
-	std::cout << "Метод READ()" << std::endl;
+	mutex.lock_shared();
+	fileLog.clear();
 	fileLog.seekg(0);
 	if (fileLog.is_open()) {
 		std::string str;
 		// Построчное чтение файла
-		mutex.lock_shared();
 		while (std::getline(fileLog, str)) {
 			std::cout << str << std::endl;
 		}
-		mutex.unlock_shared();
 	}
+	mutex.unlock_shared();
 }
 
-void Logger::start(std::string str)
-{
-	std::thread t1(&Logger::WriteLog, this, str);
-	std::thread t2(&Logger::ReadLog, this);
-	t1.join();
-	t2.join();
-}

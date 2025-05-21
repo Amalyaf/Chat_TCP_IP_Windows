@@ -15,14 +15,11 @@ class Logger
 private:
 	const char* logger = "C:/Windows/Temp/Chat/log.txt";	// файл для хранения логов
 	std::fstream fileLog;
-	time_t time = std::time(nullptr); // переменная для хранения текущего времени
-	std::stringstream ss; // для преобразования времени в строку
 	std::shared_mutex mutex;
 public:
 	Logger();
 	~Logger();
 	void WriteLog(std::string str);
 	void ReadLog();
-	void start(std::string str);
 };
 

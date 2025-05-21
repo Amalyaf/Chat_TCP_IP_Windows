@@ -21,7 +21,6 @@ int Server::init_socket()
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
-        std::cout << "WSAStartup failed with error: " << iResult << std::endl;
         return 1;
     }
 
@@ -34,7 +33,6 @@ int Server::init_socket()
     // Resolve the server address and port
     iResult = getaddrinfo(NULL, PORT, &hints, &result);
     if (iResult != 0) {
-        std::cout << "getaddrinfo failed with error: " << iResult << std::endl;
         WSACleanup();
         return 1;
     }
@@ -42,7 +40,6 @@ int Server::init_socket()
     // Create a SOCKET for the server to listen for client connections.
     ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (ListenSocket == INVALID_SOCKET) {
-        std::cout << "socket failed with error: " << WSAGetLastError() << std::endl;
         freeaddrinfo(result);
         WSACleanup();
         return 1;
@@ -51,7 +48,6 @@ int Server::init_socket()
     // Setup the TCP listening socket
     iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
     if (iResult == SOCKET_ERROR) {
-        std::cout << "bind failed with error: " << WSAGetLastError() << std::endl;
         freeaddrinfo(result);
         closesocket(ListenSocket);
         WSACleanup();
@@ -62,7 +58,6 @@ int Server::init_socket()
 
     iResult = listen(ListenSocket, SOMAXCONN);
     if (iResult == SOCKET_ERROR) {
-        std::cout << "listen failed with error: " << WSAGetLastError() << std::endl;
         closesocket(ListenSocket);
         WSACleanup();
         return 1;
@@ -71,7 +66,6 @@ int Server::init_socket()
     // Accept a client socket
     ClientSocket = accept(ListenSocket, NULL, NULL);
     if (ClientSocket == INVALID_SOCKET) {
-        std::cout << "accept failed with error: " << WSAGetLastError() << std::endl;
         closesocket(ListenSocket);
         WSACleanup();
         return 1;
@@ -91,8 +85,6 @@ int Server::init_DB()
     if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlEnvHandle, &sqlConnHandle))
         close_DB();
 
-    std::cout << "Попытка подключения к SQL Server...\n";
-
     // Устанавливаем соединение с сервером  
     switch (SQLDriverConnect(sqlConnHandle,
         GetDesktopWindow(),
@@ -106,12 +98,10 @@ int Server::init_DB()
 
     case SQL_SUCCESS:
     case SQL_SUCCESS_WITH_INFO:
-        std::cout << "Успешное подключение к SQL Server\n";
         break;
 
     case SQL_INVALID_HANDLE:
     case SQL_ERROR:
-        std::cout << "Не удалось подключиться к SQL Server\n";
         close_DB();
 
     default:
@@ -123,12 +113,9 @@ int Server::init_DB()
         close_DB();
         return 1;
     }
-        
-    std::cout << "\nВыполнение запроса T-SQL...\n";
 
     // Если выполнение запроса с ошибками, то выходим из программы
     if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT * from users", SQL_NTS)) {
-        std::cout << "Ошибка запроса SQL Server \n";
         close_DB();
         return 1;
     }
@@ -305,10 +292,10 @@ int Server::Select_Users_DB_status(const std::wstring& request)
 
 int Server::Select_Users_DB(std::string login)
 {
-    
     std::wstring lgn(login.begin(), login.end());
     int _id = get_ID_DB(login);
-    std::wstring wquery = L"Select * from users";
+    std::wstring wquery = L"Select id from users where login = '" + lgn + L"'";
+
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
     if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)wquery.c_str(), SQL_NTS)) {
         std::cout << "Success select from Users! \n";
@@ -320,60 +307,50 @@ int Server::Select_Users_DB(std::string login)
 
     SQLINTEGER id;
     SQLLEN len;
-    SQLVARCHAR    V_OD_login[240];
-    SQLLEN sql_str_length;
+    //SQLVARCHAR    V_OD_login[240];
+    //SQLLEN sql_str_length;
 
     SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &id, 0, nullptr);
-    SQLBindCol(sqlStmtHandle, 2, SQL_C_CHAR, &V_OD_login, SQL_RESULT_LEN, &sql_str_length);
+    //SQLBindCol(sqlStmtHandle, 2, SQL_C_CHAR, &V_OD_login, SQL_RESULT_LEN, &sql_str_length);
 
-    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
-        if (login == reinterpret_cast<char*>(V_OD_login)) {
-            if (_id == id) {
-                return 1;
-            }
-            else {
-                return -1;
-            }
-        }
+    if (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
+        if (_id == id)
+            return 1;
     }
-
-    return -1;
+    else {
+        return -1;
+    }
 }
 
 int Server::Select_UsersPswd_DB(std::string login, std::string password)
 {
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
+
+    std::wstring lgn(login.begin(), login.end());
+    std::wstring pswd(password.begin(), password.end());
     int _id = get_ID_DB(login);
 
-    std::wstring query = L"SELECT * FROM users_pswd";
+    std::wstring query = L"SELECT id FROM users_pswd WHERE password = '" + pswd + L"'";
 
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE);
 
     if (SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)query.c_str(), SQL_NTS) != SQL_SUCCESS) {
         std::cout << "Ошибка при выполнении SELECT по паролю!\n";
-        return -1;
+        return 1;
     }
 
-    SQLINTEGER user_id;
+    SQLINTEGER id;
     SQLLEN len;
-    SQLVARCHAR    V_OD_password[240];
-    SQLLEN sql_str_length;
 
-    SQLBindCol(sqlStmtHandle, 2, SQL_INTEGER, &user_id, 0, nullptr);
-    SQLBindCol(sqlStmtHandle, 3, SQL_C_CHAR, &V_OD_password, SQL_RESULT_LEN, &sql_str_length);
+    SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &id, 0, nullptr);
 
-    while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
-            if (_id == user_id) {
-                if (password == reinterpret_cast<char*>(V_OD_password)) {
-                    return 1;
-                }
-     
-                else {
-                    return -1;
-                }
-            }
-        }
-    return -1;
+    if (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
+        if (_id == id)
+            return 1;
+    }
+    else {
+        return -1;
+    }
 }
 
 void Server::Delete_prvt_msg_DB(int id)
@@ -500,8 +477,6 @@ void Server::get_Users_pswd_DB()
     SQLINTEGER     V_OD_user_id[240];
     SQLVARCHAR    V_OD_password[240];
 
-
-
     V_OD_err = SQLBindCol(sqlStmtHandle, 1, SQL_INTEGER, &V_OD_id, sizeof(V_OD_id), nullptr);
     V_OD_err = SQLBindCol(sqlStmtHandle, 2, SQL_C_CHAR, &V_OD_user_id, SQL_RESULT_LEN, &sql_str_length);
     V_OD_err = SQLBindCol(sqlStmtHandle, 3, SQL_C_CHAR, &V_OD_password, SQL_RESULT_LEN, &sql_str_length);
@@ -583,10 +558,10 @@ void Server::get_public_message_DB(std::string l)
 
     SQLFreeStmt(sqlStmtHandle, SQL_CLOSE); // очищаем перед новым INSERT
     if (SQL_SUCCESS == SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)request.c_str(), SQL_NTS)) {
-        std::cout << "Success Select! \n";
+        std::cout << "Success Select PUBLIC_MESSAGE! \n";
     }
     else {
-        std::cout << "Error select!\n";
+        std::cout << "Error select PUBLIC_MESSAGE!\n";
         return;
     }
 
@@ -609,6 +584,7 @@ void Server::get_public_message_DB(std::string l)
     V_OD_err = SQLRowCount(sqlStmtHandle, &sql_str_length);
 
     int count = 0;
+
     while (SQLFetch(sqlStmtHandle) != SQL_NO_DATA) {
         //Выведем на экран данные          
         if (recipient_id == V_OD_recipient_id) {

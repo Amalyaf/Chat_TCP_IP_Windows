@@ -25,6 +25,7 @@ private:
 	bool _status = false; // если был выполнен вход статус = true, в противном случае - false.
 	Server server;
 	Logger log;
+	std::shared_mutex mutex;
 	int count_users = 0; // кол-во зарегистрированных пользователей
 public:
 	Chat(); // конструктор
